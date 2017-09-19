@@ -35,7 +35,7 @@ class ProductTest extends TestCase
     $user = User::all()->first();
      
     $request = [
-      'name' => 'PKE Meter',
+      'name'        => 'PKE Meter',
       'description' => 'T tool for detecting ghosts.',
       'price'       => '50000.00',
       'token'       => $user->token,
@@ -63,14 +63,17 @@ class ProductTest extends TestCase
 
   public function testAddingImageToProductViaAPI()
   {
-    Storage::fake('images');
 
     $user = User::all()->first();
     $product = Product::all()->first();
+    $local_file = __DIR__ . '/test-files/cat.jpg';
+
+    $image = new UploadedFile($local_file, 'cat.jpg', 'image/jpg', filesize($local_file), null, false);
 
     $request = [
       'token' => $user->token,
-      'image' => UploadedFile::fake()->image('image.jpg'),
+      'image' => $image,
+      'type'  => 'image/jpg',
     ];
 
     $response = $this->json('POST', '/api/products/'.$product->id.'/add/image', $request);
@@ -89,4 +92,17 @@ class ProductTest extends TestCase
     $response = $this->json('POST', '/api/products/'.$product->id.'/remove', $request);
     $response->assertStatus(200);
   }
+
+  public function testRetrieveAllProducts()
+  {
+    $user = User::all()->first();
+
+    $request = [
+      'token' => $user->token,
+    ];
+
+    $response = $this->json('POST', '/api/products', $request);
+    $response->assertStatus(200);
+  }
+
 }

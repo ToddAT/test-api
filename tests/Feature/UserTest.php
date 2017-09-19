@@ -20,4 +20,17 @@ class UserTest extends TestCase
     $user = User::all()->first();
     $this->assertInstanceOf(User::class, $user);
   }
+
+  public function testFetchAllProductsForUserViaAPI()
+  {
+
+    $user = User::all()->first();
+
+    $request = [
+      'token' => $user->token,
+    ];
+
+    $response = $this->json('POST', '/api/users/'.$user->id.'/products', $request);
+    $response->assertStatus(200);
+  }
 }

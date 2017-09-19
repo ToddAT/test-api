@@ -31,6 +31,17 @@ class UserController extends Controller
     return response()->json($user->products());
   }
 
+  public function products(Request $request, User $user)
+  {
+    $this->validate($request, [
+        'token' => 'required',
+    ]);
+
+    $auth = User::where('token', $request->token)->firstOrFail();
+
+    return response()->json($user->products());
+  }
+
   public function disown(Request $request, User $user, Product $product)
   {
     $this->validate($request, [

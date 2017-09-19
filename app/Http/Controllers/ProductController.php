@@ -11,12 +11,15 @@ use App\User as User;
 
 class ProductController extends Controller
 {
-  public function index($product = null)
+  public function index(Request $request)
   {
+    $this->validate($request, [
+        'token' => 'required',
+    ]);
 
-    if(is_null($product)) {
-      $product = Product::all();
-    }
+    $user = User::where('token', $request->token)->firstOrFail();
+
+    $product = Product::all();
 
     return response()->json($product);
   }
@@ -88,25 +91,18 @@ class ProductController extends Controller
         'token' => 'required',
     ]);
 
-    return response()->json($product);
+    $user = User::where('token', $request->token)->firstOrFail();
 
-    $req = collect($request);
-    $token = $req->pluck('token');
-
-    $user = User::where('token', $token)->firstOrFail();
-
-    if ($request->hasFile('image')) {
-      $file = $request->file('image');
-      $contents = $file->openFile()->fread($file->getSize());
-      $product->image = $contents;
-    } else {
-
+    if(!$request->hasFile('image')) {
       return Response::json(array(
           'code'      =>  404,
           'message'   =>  'Invalid image file.',
       ), 404); 
     }
 
+    $file = $request->file('image');
+    $file->store(public_path('images'));
+    $product->image = $file->getPathname();
     $product->save();
 
     return response()->json($product);
